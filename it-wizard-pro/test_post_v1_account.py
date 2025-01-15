@@ -1,22 +1,30 @@
 import requests
 import pprint
+from json import (
+    loads,
+    JSONDecodeError,
+)
+
 
 def test_user_registration_and_authorization():
     # 1) Рега пользака
 
-    login = 'sefremov'
+    login = 'hunter3'
     password = 'tester'
-    email = f'{login}'
+    email = f'{login}@mail.ru'
 
     json_data = {
-        'login': f'{login}',
-        'email': f'{email}@mail.ru',
-        'password': f'{password}',
+        'login': login,
+        'email': email,
+        'password': password,
     }
 
     response = requests.post('http://5.63.153.31:5051/v1/account', json=json_data)
     print("\nStatus_code: ", response.status_code)
-    pprint.pprint((response.json()))
+    print("response.text: ", response.text)
+
+    assert response.status_code == 201, f"Error: user hasn't been registered {response.json()}"
+
 
     # 2) Получить письма из почтового ящика
 
@@ -26,25 +34,55 @@ def test_user_registration_and_authorization():
 
     response = requests.get('http://5.63.153.31:5025/api/v2/messages', params=params, verify=False)
     print("Status_code: ", response.status_code)
-    pprint.pprint((response.json()))
+    print("response.text: ", response.text)
+
+    assert response.status_code == 200, "Error: messages haven't been delivered"
 
     # 3) Получить активационный токен
-    pass
-    # 4) Активация пользака
+    token = None
 
-    response = requests.put('http://5.63.153.31:5051/v1/account/3b08bf34-206f-4d15-a726-6bf33ee662a6')
+    try:
+        for item in response.json()['items']:
+            user_data = loads(item['Content']['Body'])
+            user_login = user_data.get('Login')
+            if user_login == login:
+                print('________login: ', user_login)
+                token = user_data.get('ConfirmationLinkUrl').split('/')[-1]
+                print('_______token: ', token)
+    except JSONDecodeError:
+        print("Response is not a json format")
+    except KeyError:
+        print(f"There's no key USER_DATA")
+
+    assert token is not None, f"Error: token hasn't been delivered for the user {login}"
+    # test
+    # for item in response.json()['items']:
+    #     user_data = loads(item['Content']['Body'])
+    #     user_login = user_data.get('Login')
+    #     if user_login == login:
+    #         print('login: ', user_login)
+    #         token = user_data.get('ConfirmationLinkUrl').split('/')[-1]
+    #         print('token: ', token)
+
+    # 4) Активация пользака:
+
+    response = requests.put(f'http://5.63.153.31:5051/v1/account/{token}')
     print("Status_code: ", response.status_code)
-    pprint.pprint((response.json()))
+    print(response.text)
+
+    assert response.status_code == 200, f"Error: user {login} hasn't been activated"
 
     # 5) Авторизоваться
 
     json_data = {
-        'login': 'sefremov1',
-        'password': 'sefremov1',
+        'login': login,
+        'password': password,
         'rememberMe': True,
     }
 
-    response = requests.post('http://5.63.153.31:5051/v1/account/login', json=json_data)
+    response = requests.post(f'http://5.63.153.31:5051/v1/account/login', json=json_data)
 
     print("Status_code: ", response.status_code)
-    pprint.pprint((response.json()))
+    print(response.text)
+
+    assert response.status_code == 200, f"Error: user {login} can't authorize"

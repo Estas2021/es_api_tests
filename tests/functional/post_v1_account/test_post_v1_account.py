@@ -3,7 +3,7 @@ from api_account.apis.account_email import EmailApi
 from api_mailhog.apis.mailhog_api import MailhogApi
 from api_account.apis.login_api import LoginApi
 
-# from faker import Faker
+from faker import Faker
 
 from json import (
     loads,
@@ -19,8 +19,9 @@ def test_user_registration_and_authorization():
     mailhog_api = MailhogApi(host='http://5.63.153.31:5025')
     change_mail_account_api = EmailApi(host='http://5.63.153.31:5051')
 
+    fake = Faker()
 
-    login = 'stas37'
+    login = f'{fake.user_name()}_17.01'
     password = 'tester'
     email = f'{login}@mail.ru'
 
@@ -87,7 +88,7 @@ def test_user_registration_and_authorization():
     json_data = {
         'login': login,
         'password': password,
-        'email': email
+        'email': fake.email()
     }
 
     response = change_mail_account_api.put_v1_account_email(json_data=json_data)

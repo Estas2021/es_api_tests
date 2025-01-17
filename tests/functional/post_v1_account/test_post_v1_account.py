@@ -1,6 +1,9 @@
 from api_account.apis.account_api import AccountApi
+from api_account.apis.account_email import EmailApi
 from api_mailhog.apis.mailhog_api import MailhogApi
 from api_account.apis.login_api import LoginApi
+
+# from faker import Faker
 
 from json import (
     loads,
@@ -9,15 +12,18 @@ from json import (
 
 
 def test_user_registration_and_authorization():
-    # 1) Рега пользака
+    # 1) Зарегистрировать пользака на Dungeonmaster.ru
 
     account_api = AccountApi(host='http://5.63.153.31:5051')
     login_api = LoginApi(host='http://5.63.153.31:5051')
     mailhog_api = MailhogApi(host='http://5.63.153.31:5025')
+    change_mail_account_api = EmailApi(host='http://5.63.153.31:5051')
 
-    login = 'stas18'
+
+    login = 'stas37'
     password = 'tester'
     email = f'{login}@mail.ru'
+
 
     json_data = {
         'login': login,
@@ -29,7 +35,7 @@ def test_user_registration_and_authorization():
     print("\nStatus_code: ", response.status_code)
     print("response.text: ", response.text)
 
-    assert response.status_code == 201, f"Error: user hasn't been registered {response.json()}"
+    assert response.status_code == 201, f"Error: user {login} hasn't been registered {response.json()}"
 
 
     # 2) Получить письма из почтового ящика
@@ -59,7 +65,7 @@ def test_user_registration_and_authorization():
     print("Status_code: ", response.status_code)
     print(response.text)
 
-    assert response.status_code == 200, f"Error: user {login} hasn't been activated"
+    assert response.status_code == 200, f"Error: for authorization user {login} need to be activated!"
 
     # 5) Авторизоваться
 
@@ -76,6 +82,19 @@ def test_user_registration_and_authorization():
 
     assert response.status_code == 200, f"Error: user {login} can't authorize"
 
+    # Меняем email
+
+    json_data = {
+        'login': login,
+        'password': password,
+        'email': email
+    }
+
+    response = change_mail_account_api.put_v1_account_email(json_data=json_data)
+    print("Status_code: ", response.status_code)
+    print(response.text)
+
+    assert response.status_code == 200, "Error: email hasn't been changed"
 """-----------------------------------------------------------------------------------------"""
 
 

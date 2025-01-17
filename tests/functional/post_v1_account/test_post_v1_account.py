@@ -2,7 +2,6 @@ from api_account.apis.account_api import AccountApi
 from api_mailhog.apis.mailhog_api import MailhogApi
 from api_account.apis.login_api import LoginApi
 
-
 from json import (
     loads,
     JSONDecodeError,
@@ -16,7 +15,7 @@ def test_user_registration_and_authorization():
     login_api = LoginApi(host='http://5.63.153.31:5051')
     mailhog_api = MailhogApi(host='http://5.63.153.31:5025')
 
-    login = 'sehfjshe'
+    login = 'hunter16.01'
     password = 'tester'
     email = f'{login}@mail.ru'
 

@@ -15,7 +15,7 @@ def test_user_registration_and_authorization():
     login_api = LoginApi(host='http://5.63.153.31:5051')
     mailhog_api = MailhogApi(host='http://5.63.153.31:5025')
 
-    login = 'hunter16.01'
+    login = 'sefremov1701'
     password = 'tester'
     email = f'{login}@mail.ru'
 

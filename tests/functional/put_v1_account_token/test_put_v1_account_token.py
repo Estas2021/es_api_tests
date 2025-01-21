@@ -1,14 +1,14 @@
 from api_account.apis.account_api import AccountApi
 from api_mailhog.apis.mailhog_api import MailhogApi
 from api_account.apis.login_api import LoginApi
-from faker import Faker
 
+from faker import Faker
 from json import (
     loads,
     JSONDecodeError,
 )
 
-def test_post_v1_account():
+def test_put_v1_account_token():
 
     # зарегать пользака на Dungeonmaster.ru
     account_api = AccountApi(host='http://5.63.153.31:5051')
@@ -69,6 +69,7 @@ def test_post_v1_account():
     print("response.text: ", response.text)
 
     assert response.status_code == 200, f"Error: user {login} can't authorize"
+
 
 
 def get_activation_token_by_login(login, response):

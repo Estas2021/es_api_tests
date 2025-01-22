@@ -1,7 +1,10 @@
+import pprint
+
 from requests import session
 import structlog
 import uuid
 from json import JSONDecodeError
+import curlify
 
 class RestClient:
 
@@ -56,6 +59,9 @@ class RestClient:
         )
 
         rest_response = self.session.request(method=method, url=full_url, **kwargs)
+
+        curl = curlify.to_curl(rest_response.request)
+        pprint.pprint(curl)
 
         log.msg(
             event='Response',

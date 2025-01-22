@@ -8,6 +8,7 @@ from json import (
     JSONDecodeError,
 )
 
+
 structlog.configure(
     processors=[
         structlog.processors.JSONRenderer(

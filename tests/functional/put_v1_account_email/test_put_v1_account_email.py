@@ -5,7 +5,8 @@ from faker import Faker
 import json
 import base64
 import re
-
+from rest_client.configration import Configuration as MailhogConfiguration
+from rest_client.configration import Configuration as EsApiConfiguration
 
 from json import (
     loads,
@@ -15,13 +16,22 @@ from json import (
 def test_put_v1_account_email():
 
     # зарегать пользака на Dungeonmaster.ru
-    account_api = AccountApi(host='http://5.63.153.31:5051')
-    login_api = LoginApi(host='http://5.63.153.31:5051')
-    mailhog_api = MailhogApi(host='http://5.63.153.31:5025')
+    mailhog_configuration = MailhogConfiguration(
+        host='http://5.63.153.31:5025',
+        # disable_log=False
+    )
+    es_api_configuration = EsApiConfiguration(
+        host='http://5.63.153.31:5051',
+        disable_log=False
+    )
+
+    account_api = AccountApi(configuration=es_api_configuration)
+    login_api = LoginApi(configuration=es_api_configuration)
+    mailhog_api = MailhogApi(configuration=mailhog_configuration)
 
     fake = Faker()      # экземпляр класса для генерации фейковых данных
 
-    login = f'FAKER_21_{fake.user_name()}'
+    login = f'FAKER_22_{fake.user_name()}'
     password = 'tester'
     email = f'{login}@mail.ru'
 
@@ -157,7 +167,6 @@ def test_put_v1_account_email():
     # print("token_2: ", token)
     #
     # assert token is not None, f"Error: token hasn't been delivered. Step 4."
-
 
     # 5. авторизоваться
     json_data = {

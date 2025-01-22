@@ -17,7 +17,7 @@ def test_put_v1_account_token():
 
     fake = Faker()      # экземпляр класса для генерации фейковых данных
 
-    login = f'FAKER_21_{fake.user_name()}'
+    login = f'FAKER_22_{fake.user_name()}'
     password = 'tester'
     email = f'{login}@mail.ru'
 

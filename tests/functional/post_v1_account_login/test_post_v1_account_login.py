@@ -39,30 +39,24 @@ def test_post_v1_account_login():
     }
 
     response = account_api.post_v1_account(json_data=json_data)
-    print("\nStatus_code: ", response.status_code)
-    print("response.text: ", response.text)
 
     assert response.status_code == 201, f"Error: user {login} hasn't been registered {response.json()}"
 
 
     # получить письмо из почтового ящика
     response = mailhog_api.get_api_v2_messages(response)
-    print("Status_code: ", response.status_code)
-    print("response.text: ", response.text)
 
     assert response.status_code == 200, "Error: message hasn't been delivered"
 
 
     # получить активационный токен на почтовом серве
     token = get_activation_token_by_login(login, response)
-    print("Получение 1го активационного токена", token)
+
     assert token is not None, f"Error: token hasn't been delivered"
 
 
     # активировать пользака
     response = account_api.put_v1_account_token(token=token)
-    print("Status_code: ", response.status_code)
-    print("response.text: ", response.text)
 
     assert response.status_code == 200, f"Error: user {login} need to be activated!"
 
@@ -75,9 +69,6 @@ def test_post_v1_account_login():
     }
 
     response = login_api.post_v1_account_login(json_data=json_data)
-
-    print("Status_code: ", response.status_code)
-    print("response.text: ", response.text)
 
     assert response.status_code == 200, f"Error: user {login} can't authorize"
 

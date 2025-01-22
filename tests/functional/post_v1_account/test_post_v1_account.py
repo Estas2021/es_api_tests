@@ -7,7 +7,8 @@ from json import (
     loads,
     JSONDecodeError,
 )
-
+from rest_client.configration import Configuration as MailhogConfiguration
+from rest_client.configration import Configuration as EsApiConfiguration
 
 structlog.configure(
     processors=[
@@ -21,10 +22,19 @@ structlog.configure(
 
 def test_post_v1_account():
 
-    # зарегать пользака на Dungeonmaster.ru
-    account_api = AccountApi(host='http://5.63.153.31:5051')
-    login_api = LoginApi(host='http://5.63.153.31:5051')
-    mailhog_api = MailhogApi(host='http://5.63.153.31:5025')
+    # Зарегать пользака на Dungeonmaster.ru
+    mailhog_configuration = MailhogConfiguration(
+        host='http://5.63.153.31:5025',
+        # disable_log=False
+    )
+    es_api_configuration = EsApiConfiguration(
+        host='http://5.63.153.31:5051',
+        disable_log=False
+    )
+
+    account_api = AccountApi(configuration=es_api_configuration)
+    login_api = LoginApi(configuration=es_api_configuration)
+    mailhog_api = MailhogApi(configuration=mailhog_configuration)
 
     fake = Faker()      # экземпляр класса для генерации фейковых данных
 

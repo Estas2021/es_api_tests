@@ -5,12 +5,23 @@ from faker import Faker
 import time
 import base64
 import re
+import structlog
 from rest_client.configration import Configuration as MailhogConfiguration
 from rest_client.configration import Configuration as EsApiConfiguration
 
 from json import (
     loads,
     JSONDecodeError,
+)
+
+structlog.configure(
+    processors=[
+        structlog.processors.JSONRenderer(
+            indent=4,
+            ensure_ascii=True,
+            # sort_keys=True
+        )
+    ]
 )
 
 def test_put_v1_account_email():
@@ -31,7 +42,7 @@ def test_put_v1_account_email():
 
     fake = Faker()      # экземпляр класса для генерации фейковых данных
 
-    login = f'FAKER_22_{fake.user_name()}'
+    login = f'FAKER_23_{fake.user_name()}'
     password = 'tester'
     email = f'{login}@mail.ru'
 
@@ -55,14 +66,13 @@ def test_put_v1_account_email():
 
 
     # получить активационный токен на почтовом серве
-    token = get_activation_token_by_login(login, response, confirmation_email_title=f"Добро пожаловать на DM.AM, {login}!")
+    token = get_activation_token_by_login(login, response, f"Добро пожаловать на DM.AM, {login}!")
 
     assert token is not None, f"Error: token hasn't been delivered"
 
 
     # активировать пользака
     response = account_api.put_v1_account_token(token=token)
-
 
     assert response.status_code == 200, f"Error: user {login} need to be activated!"
 
@@ -93,32 +103,14 @@ def test_put_v1_account_email():
 
 
     # 2. попытаться войти, получаем 403
-    # серверу может потребоваться время для обновления данных. Задержка позволяет убедиться, что данные актуальны перед следующим запросом.
+    """
+    # серверу может потребоваться время для обновления данных. Задержка позволяет убедиться,
+     что данные актуальны перед следующим запросом.
+     """
     time.sleep(2)
 
 
     # 3. На почте найти токен по новому емейлу для подтверждения смены емейла
-
-    def decode_mime(
-            encoded_string
-    ):
-        """
-        код предназначен для декодирования строки, закодированной в формате MIME (Multipurpose Internet Mail Extensions),
-        который часто используется в электронной почте для кодирования не-ASCII символов.
-        :param encoded_string:
-        :return:
-        """
-        pattern = r"=\?utf-8\?b\?(.*?)\?="
-        decoded_string = encoded_string
-
-        for match in re.findall(pattern, encoded_string):
-            decoded_part = base64.b64decode(match).decode("utf-8")
-            decoded_string = decoded_string.replace(
-                "=?utf-8?b?" + match + "?=", decoded_part
-            )
-
-        return decoded_string
-
     token = get_activation_token_by_login(login, response, f'Подтверждение смены адреса электронной почты на DM.AM для {login}')
 
     assert token is not None, f"Error: Token hasn't been received"
@@ -141,6 +133,27 @@ def test_put_v1_account_email():
     assert response.status_code == 200, f"Error: user {login} can't be authorized. Step 5."
 
 print("---------------------------------------------------------------------------------------")
+
+
+def decode_mime(
+        encoded_string
+):
+    """
+    код предназначен для декодирования строки, закодированной в формате MIME (Multipurpose Internet Mail Extensions),
+    который часто используется в электронной почте для кодирования не-ASCII символов.
+    :param encoded_string:
+    :return:
+    """
+    pattern = r"=\?utf-8\?b\?(.*?)\?="
+    decoded_string = encoded_string
+
+    for match in re.findall(pattern, encoded_string):
+        decoded_part = base64.b64decode(match).decode("utf-8")
+        decoded_string = decoded_string.replace(
+            "=?utf-8?b?" + match + "?=", decoded_part
+        )
+
+    return decoded_string
 
 
 def get_activation_token_by_login(

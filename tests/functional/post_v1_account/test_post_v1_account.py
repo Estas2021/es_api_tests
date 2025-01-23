@@ -2,6 +2,8 @@ from api_account.apis.account_api import AccountApi
 from api_mailhog.apis.mailhog_api import MailhogApi
 from api_account.apis.login_api import LoginApi
 from faker import Faker
+import  base64
+import re
 
 from json import (
     loads,
@@ -17,7 +19,7 @@ def test_post_v1_account():
 
     fake = Faker()      # экземпляр класса для генерации фейковых данных
 
-    login = f'FAKER_21_{fake.user_name()}'
+    login = f'FAKER_23_{fake.user_name()}'
     password = 'tester'
     email = f'{login}@mail.ru'
 
@@ -43,8 +45,11 @@ def test_post_v1_account():
 
 
     # получить активационный токен на почтовом серве
-    token = get_activation_token_by_login(login, response)
-    print("Получение 1го активационного токена", token)
+
+
+
+    token = get_activation_token_by_login(login, response, f"Добро пожаловать на DM.AM, {login}!")
+
     assert token is not None, f"Error: token hasn't been delivered"
 
 
@@ -68,16 +73,47 @@ def test_post_v1_account():
     print("Status_code: ", response.status_code)
     print("response.text: ", response.text)
 
-    assert response.status_code == 200, f"Error: user {login} can't authorize"
+    assert response.status_code == 200, f"Error: user {login} can't be authorized"
 
 
-def get_activation_token_by_login(login, response):
+def decode_mime(
+        encoded_string
+):
+    """
+    код предназначен для декодирования строки, закодированной в формате MIME (Multipurpose Internet Mail Extensions),
+    который часто используется в электронной почте для кодирования не-ASCII символов.
+    :param encoded_string:
+    :return:
+    """
+    pattern = r"=\?utf-8\?b\?(.*?)\?="
+    decoded_string = encoded_string
+
+    for match in re.findall(pattern, encoded_string):
+        decoded_part = base64.b64decode(match).decode("utf-8")
+        decoded_string = decoded_string.replace(
+            "=?utf-8?b?" + match + "?=", decoded_part
+        )
+
+    return decoded_string
+
+
+def get_activation_token_by_login(
+        login,
+        response,
+        email_title
+):
     token = None
+
     try:
         for item in response.json()['items']:
             user_data = loads(item['Content']['Body'])
+            confirmation_condition = False
+            if email_title:
+                decoded_email_title = decode_mime(item["Content"]["Headers"]["Subject"][0])
+                if email_title in decoded_email_title:
+                    confirmation_condition = True
             user_login = user_data.get('Login')
-            if user_login == login:
+            if user_login == login and email_title and confirmation_condition:
                 token = user_data.get('ConfirmationLinkUrl').split('/')[-1]
 
     except JSONDecodeError:

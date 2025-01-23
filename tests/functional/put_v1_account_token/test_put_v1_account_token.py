@@ -24,7 +24,7 @@ structlog.configure(
     ]
 )
 
-def test_put_v1_account_email():
+def test_put_v1_account_token():
 
     # зарегать пользака на Dungeonmaster.ru
     mailhog_configuration = MailhogConfiguration(

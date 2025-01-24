@@ -42,7 +42,7 @@ def test_put_v1_account_token():
 
     fake = Faker()      # экземпляр класса для генерации фейковых данных
 
-    login = f'FAKER_24_{fake.user_name()}'
+    login = f'FAKER_25_{fake.user_name()}'
     password = 'tester'
     email = f'{login}@mail.ru'
 

@@ -59,7 +59,7 @@ def test_post_v1_account():
 
 
     # получить письмо из почтового ящика
-    response = mailhog_api.get_api_v2_messages(response)
+    response = mailhog_api.get_api_v2_messages()
 
     assert response.status_code == 200, "Error: confirmation_email hasn't been delivered"
 

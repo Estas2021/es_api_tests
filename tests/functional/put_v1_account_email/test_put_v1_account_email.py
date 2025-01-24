@@ -29,7 +29,7 @@ def test_put_v1_account_email():
     # зарегать пользака на Dungeonmaster.ru
     mailhog_configuration = MailhogConfiguration(
         host='http://5.63.153.31:5025',
-        disable_log=False
+        # disable_log=False
     )
     es_api_configuration = EsApiConfiguration(
         host='http://5.63.153.31:5051',
@@ -59,15 +59,13 @@ def test_put_v1_account_email():
 
 
     # получить письмо из почтового ящика
-    response = mailhog_api.get_api_v2_messages(response)
-
+    response = mailhog_api.get_api_v2_messages()
 
     assert response.status_code == 200, "Error: confirmation_email hasn't been delivered"
 
 
     # получить активационный токен на почтовом серве
     token = get_activation_token_by_login(login, response, f"Добро пожаловать на DM.AM, {login}!")
-
     assert token is not None, f"Error: token hasn't been delivered"
 
 
@@ -94,29 +92,26 @@ def test_put_v1_account_email():
     json_data = {
         'login': login,
         'password': password,
-        'email': email
+        'email': 'hack_2423@rambler.ru'
     }
 
     response = account_api.put_v1_account_email(json_data=json_data)
 
     assert response.status_code == 200, "Error: email hasn't been changed"
 
-    """
-    # серверу может потребоваться время для обновления данных. Задержка позволяет убедиться,
-     что данные актуальны перед следующим запросом.
-     """
-    time.sleep(2)
 
     # 2. попытаться войти, получаем 403
-
-    # response = mailhog_api.get_api_v2_messages(response)
-    # assert response.status_code == 200, "Error: confirmation_email hasn't been delivered"
-
     response = login_api.post_v1_account_login(json_data=json_data)
 
     assert response.status_code == 403, f"Error: user {login} was authorized. 1st token is still active."
 
-    response = mailhog_api.get_api_v2_messages(response)
+
+    response = mailhog_api.get_api_v2_messages()
+    """
+   серверу может потребоваться время для обновления данных. Задержка позволяет убедиться,
+   что данные актуальны перед следующим запросом.
+    """
+    time.sleep(5)  # Подождите 5 секунд
 
     # 3. На почте найти токен по новому емейлу для подтверждения смены емейла
     token = get_activation_token_by_login(login, response, f'Подтверждение смены адреса электронной почты на DM.AM для {login}')

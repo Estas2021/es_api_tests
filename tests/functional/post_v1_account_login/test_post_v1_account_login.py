@@ -58,7 +58,7 @@ def test_post_v1_account_login():
 
 
     # получить письмо из почтового ящика
-    response = mailhog_api.get_api_v2_messages(response)
+    response = mailhog_api.get_api_v2_messages()
 
     assert response.status_code == 200, "Error: confirmation_email hasn't been delivered"
 
@@ -84,7 +84,7 @@ def test_post_v1_account_login():
 
     response = login_api.post_v1_account_login(json_data=json_data)
 
-    assert response.status_code == 200, f"Error: user {login} can't authorize"
+    assert response.status_code == 200, f"Error: user {login} can't be authorized"
 
 
 def decode_mime(

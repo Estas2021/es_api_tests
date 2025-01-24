@@ -58,7 +58,7 @@ def test_put_v1_account_token():
 
 
     # получить письмо из почтового ящика
-    response = mailhog_api.get_api_v2_messages(response)
+    response = mailhog_api.get_api_v2_messages()
 
     assert response.status_code == 200, "Error: confirmation_email hasn't been delivered"
 
@@ -84,51 +84,7 @@ def test_put_v1_account_token():
 
     response = login_api.post_v1_account_login(json_data=json_data)
 
-    assert response.status_code == 200, f"Error: user {login} can't authorize"
-
-
-    # 1. сменить email
-
-    json_data = {
-        'login': login,
-        'password': password,
-        'email': email
-    }
-
-    response = account_api.put_v1_account_email(json_data=json_data)
-
-    assert response.status_code == 200, "Error: email hasn't been changed"
-
-
-    # 2. попытаться войти, получаем 403
-    """
-    # серверу может потребоваться время для обновления данных. Задержка позволяет убедиться,
-     что данные актуальны перед следующим запросом.
-     """
-    time.sleep(2)
-
-
-    # 3. На почте найти токен по новому емейлу для подтверждения смены емейла
-    token = get_activation_token_by_login(login, response, f'Подтверждение смены адреса электронной почты на DM.AM для {login}')
-
-    assert token is not None, f"Error: Token hasn't been received"
-
-
-    # 4. активировать этот токен
-    response = account_api.put_v1_account_token(token=token)
-
-    assert response.status_code == 200, f"Error: user {login} need to be activated!"
-
-    # 5. авторизоваться
-    json_data = {
-        'login': login,
-        'password': password,
-        'rememberMe': True,
-    }
-
-    response = login_api.post_v1_account_login(json_data=json_data)
-
-    assert response.status_code == 200, f"Error: user {login} can't be authorized. Step 5."
+    assert response.status_code == 200, f"Error: user {login} can't be authorized"
 
 
 def decode_mime(

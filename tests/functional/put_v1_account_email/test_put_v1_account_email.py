@@ -101,6 +101,11 @@ def test_put_v1_account_email():
 
     assert response.status_code == 200, "Error: email hasn't been changed"
 
+    """
+    # серверу может потребоваться время для обновления данных. Задержка позволяет убедиться,
+     что данные актуальны перед следующим запросом.
+     """
+    time.sleep(2)
 
     # 2. попытаться войти, получаем 403
     response = mailhog_api.get_api_v2_messages(response)
@@ -108,11 +113,6 @@ def test_put_v1_account_email():
 
     assert response.status_code == 200, "Error: confirmation_email hasn't been delivered"
 
-    """
-    # серверу может потребоваться время для обновления данных. Задержка позволяет убедиться,
-     что данные актуальны перед следующим запросом.
-     """
-    time.sleep(2)
 
     # 3. На почте найти токен по новому емейлу для подтверждения смены емейла
     token = get_activation_token_by_login(login, response, f'Подтверждение смены адреса электронной почты на DM.AM для {login}')

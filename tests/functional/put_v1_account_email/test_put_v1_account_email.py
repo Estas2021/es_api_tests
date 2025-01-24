@@ -108,10 +108,12 @@ def test_put_v1_account_email():
     time.sleep(2)
 
     # 2. попытаться войти, получаем 403
-    response = mailhog_api.get_api_v2_messages(response)
 
+    # response = mailhog_api.get_api_v2_messages(response)
+    # assert response.status_code == 200, "Error: confirmation_email hasn't been delivered"
 
-    assert response.status_code == 200, "Error: confirmation_email hasn't been delivered"
+    response = login_api.post_v1_account_login(json_data=json_data)
+    assert response.status_code == 200, f"Error: user {login} can't be authorized. Step 2."
 
 
     # 3. На почте найти токен по новому емейлу для подтверждения смены емейла

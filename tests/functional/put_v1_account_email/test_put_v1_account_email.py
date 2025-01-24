@@ -29,7 +29,7 @@ def test_put_v1_account_email():
     # зарегать пользака на Dungeonmaster.ru
     mailhog_configuration = MailhogConfiguration(
         host='http://5.63.153.31:5025',
-        # disable_log=False
+        disable_log=False
     )
     es_api_configuration = EsApiConfiguration(
         host='http://5.63.153.31:5051',
@@ -42,7 +42,7 @@ def test_put_v1_account_email():
 
     fake = Faker()      # экземпляр класса для генерации фейковых данных
 
-    login = f'FAKER_23_{fake.user_name()}'
+    login = f'FAKER_24_{fake.user_name()}'
     password = 'tester'
     email = f'{login}@mail.ru'
 
@@ -103,12 +103,16 @@ def test_put_v1_account_email():
 
 
     # 2. попытаться войти, получаем 403
+    response = mailhog_api.get_api_v2_messages(response)
+
+
+    assert response.status_code == 200, "Error: confirmation_email hasn't been delivered"
+
     """
     # серверу может потребоваться время для обновления данных. Задержка позволяет убедиться,
      что данные актуальны перед следующим запросом.
      """
     time.sleep(2)
-
 
     # 3. На почте найти токен по новому емейлу для подтверждения смены емейла
     token = get_activation_token_by_login(login, response, f'Подтверждение смены адреса электронной почты на DM.AM для {login}')
@@ -131,8 +135,6 @@ def test_put_v1_account_email():
     response = login_api.post_v1_account_login(json_data=json_data)
 
     assert response.status_code == 200, f"Error: user {login} can't be authorized. Step 5."
-
-print("---------------------------------------------------------------------------------------")
 
 
 def decode_mime(
@@ -174,6 +176,7 @@ def get_activation_token_by_login(
             user_login = user_data.get('Login')
             if user_login == login and email_title and confirmation_condition:
                 token = user_data.get('ConfirmationLinkUrl').split('/')[-1]
+                print('TOKEN: ', token)
 
     except JSONDecodeError:
         print("Response is not a json format")

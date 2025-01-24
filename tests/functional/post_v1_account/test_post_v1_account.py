@@ -24,7 +24,7 @@ structlog.configure(
     ]
 )
 
-def test_put_v1_account_email():
+def test_post_v1_account():
 
     # зарегать пользака на Dungeonmaster.ru
     mailhog_configuration = MailhogConfiguration(
@@ -42,7 +42,7 @@ def test_put_v1_account_email():
 
     fake = Faker()      # экземпляр класса для генерации фейковых данных
 
-    login = f'FAKER_23_{fake.user_name()}'
+    login = f'FAKER_24_{fake.user_name()}'
     password = 'tester'
     email = f'{login}@mail.ru'
 
@@ -87,7 +87,6 @@ def test_put_v1_account_email():
 
     assert response.status_code == 200, f"Error: user {login} can't authorize"
 
-print("-------------------------------------------------------------------------")
 
 def decode_mime(
         encoded_string

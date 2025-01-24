@@ -24,7 +24,7 @@ structlog.configure(
     ]
 )
 
-def test_put_v1_account_email():
+def test_post_v1_account_login():
 
     # зарегать пользака на Dungeonmaster.ru
     mailhog_configuration = MailhogConfiguration(
@@ -42,7 +42,7 @@ def test_put_v1_account_email():
 
     fake = Faker()      # экземпляр класса для генерации фейковых данных
 
-    login = f'FAKER_23_{fake.user_name()}'
+    login = f'FAKER_24_{fake.user_name()}'
     password = 'tester'
     email = f'{login}@mail.ru'
 
@@ -54,13 +54,11 @@ def test_put_v1_account_email():
 
     response = account_api.post_v1_account(json_data=json_data)
 
-
     assert response.status_code == 201, f"Error: user {login} hasn't been registered {response.json()}"
 
 
     # получить письмо из почтового ящика
     response = mailhog_api.get_api_v2_messages(response)
-
 
     assert response.status_code == 200, "Error: confirmation_email hasn't been delivered"
 
@@ -88,7 +86,6 @@ def test_put_v1_account_email():
 
     assert response.status_code == 200, f"Error: user {login} can't authorize"
 
-print("-------------------------------------------------------------------------")
 
 def decode_mime(
         encoded_string

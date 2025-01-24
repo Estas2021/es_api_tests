@@ -113,8 +113,10 @@ def test_put_v1_account_email():
     # assert response.status_code == 200, "Error: confirmation_email hasn't been delivered"
 
     response = login_api.post_v1_account_login(json_data=json_data)
-    assert response.status_code == 200, f"Error: user {login} can't be authorized. Step 2."
 
+    assert response.status_code == 403, f"Error: user {login} was authorized. 1st token is still active."
+
+    response = mailhog_api.get_api_v2_messages(response)
 
     # 3. На почте найти токен по новому емейлу для подтверждения смены емейла
     token = get_activation_token_by_login(login, response, f'Подтверждение смены адреса электронной почты на DM.AM для {login}')

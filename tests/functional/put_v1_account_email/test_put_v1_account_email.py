@@ -24,7 +24,7 @@ structlog.configure(
     ]
 )
 
-def test_post_v1_account():
+def test_put_v1_account_email():
 
     # зарегать пользака на Dungeonmaster.ru
     mailhog_configuration = MailhogConfiguration(
@@ -66,7 +66,6 @@ def test_post_v1_account():
 
     # получить активационный токен на почтовом серве
     token = get_activation_token_by_login(login, response, f"Добро пожаловать на DM.AM, {login}!")
-
     assert token is not None, f"Error: token hasn't been delivered"
 
 
@@ -86,6 +85,55 @@ def test_post_v1_account():
     response = login_api.post_v1_account_login(json_data=json_data)
 
     assert response.status_code == 200, f"Error: user {login} can't authorize"
+
+
+    # 1. сменить email
+
+    json_data = {
+        'login': login,
+        'password': password,
+        'email': 'hack_2423@rambler.ru'
+    }
+
+    response = account_api.put_v1_account_email(json_data=json_data)
+
+    assert response.status_code == 200, "Error: email hasn't been changed"
+
+
+    # 2. попытаться войти, получаем 403
+    response = login_api.post_v1_account_login(json_data=json_data)
+
+    assert response.status_code == 403, f"Error: user {login} was authorized. 1st token is still active."
+
+
+    response = mailhog_api.get_api_v2_messages()
+    """
+   серверу может потребоваться время для обновления данных. Задержка позволяет убедиться,
+   что данные актуальны перед следующим запросом.
+    """
+    time.sleep(5)  # Подождите 5 секунд
+
+    # 3. На почте найти токен по новому емейлу для подтверждения смены емейла
+    token = get_activation_token_by_login(login, response, f'Подтверждение смены адреса электронной почты на DM.AM для {login}')
+
+    assert token is not None, f"Error: Token hasn't been received"
+
+
+    # 4. активировать этот токен
+    response = account_api.put_v1_account_token(token=token)
+
+    assert response.status_code == 200, f"Error: user {login} need to be activated!"
+
+    # 5. авторизоваться
+    json_data = {
+        'login': login,
+        'password': password,
+        'rememberMe': True,
+    }
+
+    response = login_api.post_v1_account_login(json_data=json_data)
+
+    assert response.status_code == 200, f"Error: user {login} can't be authorized. Step 5."
 
 
 def decode_mime(
@@ -127,6 +175,7 @@ def get_activation_token_by_login(
             user_login = user_data.get('Login')
             if user_login == login and email_title and confirmation_condition:
                 token = user_data.get('ConfirmationLinkUrl').split('/')[-1]
+                print('TOKEN: ', token)
 
     except JSONDecodeError:
         print("Response is not a json format")

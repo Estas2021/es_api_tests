@@ -24,7 +24,7 @@ structlog.configure(
     ]
 )
 
-def test_post_v1_account():
+def test_put_v1_account_token():
 
     # зарегать пользака на Dungeonmaster.ru
     mailhog_configuration = MailhogConfiguration(
@@ -53,7 +53,6 @@ def test_post_v1_account():
     }
 
     response = account_api.post_v1_account(json_data=json_data)
-
 
     assert response.status_code == 201, f"Error: user {login} hasn't been registered {response.json()}"
 
@@ -85,7 +84,7 @@ def test_post_v1_account():
 
     response = login_api.post_v1_account_login(json_data=json_data)
 
-    assert response.status_code == 200, f"Error: user {login} can't authorize"
+    assert response.status_code == 200, f"Error: user {login} can't be authorized"
 
 
 def decode_mime(
